@@ -1,30 +1,113 @@
-﻿using System;
-using System.IO;
-using Microsoft.ML;
+﻿using Microsoft.ML;
 using Microsoft.ML.Core.Data;
-using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
-using Microsoft.ML.Transforms;
 using Microsoft.ML.Transforms.Categorical;
-using Microsoft.ML.Transforms.Normalizers;
-using Microsoft.ML.Transforms.Text;
+using System;
+using System.IO;
 using TaxiFare.Shared;
 
 namespace TaxiFare.TrainingModel
 {
     class Program
     {
-        static readonly string _trainDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "taxi-fare-train.csv");
-        static readonly string _testDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "taxi-fare-test.csv");
+
         static readonly string _modelPath = Path.Combine(Environment.CurrentDirectory, "Data", "Model.zip");
-        static TextLoader _textLoader;
+        static readonly TaxiTrip SampleData = new TaxiTrip()
+        {
+            VendorId = "VTS",
+            RateCode = "1",
+            PassengerCount = 1,
+            TripTime = 1140,
+            TripDistance = 3.75f,
+            PaymentType = "CRD",
+            FareAmount = 0 // To predict. Actual/Observed = 15.5
+        };
 
         static void Main(string[] args)
         {
 
             MLContext mlContext = new MLContext(seed: 0);
 
-            _textLoader = mlContext.Data.TextReader(new TextLoader.Arguments()
+            // Train
+            Console.WriteLine("Create and Train the Model...");
+            var model = Train(mlContext);
+            Console.WriteLine("End of training.");
+            SaveModelAsFile(mlContext, model);
+            Console.WriteLine("The model is saved to {0}", _modelPath);
+
+            // Evaluate
+            var metrics = Evaluate(mlContext, model);
+            DisplayMetrics(metrics);
+
+            // Test
+            var prediction = TestSinglePrediction(mlContext, SampleData);
+            DisplayPredictedFare(prediction);
+
+            Console.ReadKey();
+        }
+        static IDataView TrainDataReader(MLContext mlContext) => CreateTextLoader(mlContext)
+                .Read(Path.Combine(Environment.CurrentDirectory, "Data", "taxi-fare-train.csv"));
+
+        public static ITransformer Train(MLContext mlContext)
+        {
+            var pipeline = mlContext.Transforms.CopyColumns("FareAmount", "Label")
+                .Append(mlContext.Transforms.Categorical.OneHotEncoding("VendorId"))
+                .Append(mlContext.Transforms.Categorical.OneHotEncoding("RateCode"))
+                .Append(mlContext.Transforms.Categorical.OneHotEncoding("PaymentType"))
+                .Append(mlContext.Transforms.Concatenate("Features", "VendorId", "RateCode", "PassengerCount", "TripTime", "TripDistance", "PaymentType"))
+                .Append(mlContext.Regression.Trainers.FastTree())
+            ;
+
+            return pipeline.Fit(TrainDataReader(mlContext));
+        }
+
+        static IDataView TestDataReader(MLContext mlContext) => CreateTextLoader(mlContext)
+                     .Read(Path.Combine(Environment.CurrentDirectory, "Data", "taxi-fare-test.csv"));
+
+        private static RegressionEvaluator.Result Evaluate(MLContext mlContext, ITransformer model)
+        {
+            var predictions = model.Transform(TestDataReader(mlContext));
+            return mlContext.Regression.Evaluate(predictions, "Label", "Score");
+        }
+
+        private static void DisplayMetrics(RegressionEvaluator.Result metrics)
+        {
+            Console.WriteLine();
+            Console.WriteLine(new String('=', 35));
+            Console.WriteLine("Model quality metrics evaluation");
+            Console.WriteLine();
+            Console.WriteLine($"*       R2 Score:      {metrics.RSquared:0.##}");
+            Console.WriteLine($"*       RMS loss:      {metrics.Rms:#.##}");
+            Console.WriteLine(new String('=', 35));
+        }
+
+        private static TaxiTripFarePrediction TestSinglePrediction(MLContext mlContext, TaxiTrip sample)
+        {
+            ITransformer loadedModel;
+
+            using (var stream = new FileStream(_modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                loadedModel = mlContext.Model.Load(stream);
+
+            var predictionFunction = loadedModel.MakePredictionFunction<TaxiTrip, TaxiTripFarePrediction>(mlContext);
+
+            return predictionFunction.Predict(sample);
+        }
+
+        private static void DisplayPredictedFare(TaxiTripFarePrediction prediction)
+        {
+            Console.WriteLine();
+            Console.WriteLine(new String('*', 35));
+            Console.WriteLine($"Predicted fare: {prediction.FareAmount:0.####}, actual fare: 15.5");
+        }
+
+        private static void SaveModelAsFile(MLContext mlContext, ITransformer model)
+        {
+            using (var fileStream = new FileStream(_modelPath, FileMode.Create, FileAccess.Write, FileShare.Write))
+                mlContext.Model.Save(model, fileStream);
+        }
+
+        static TextLoader CreateTextLoader(MLContext mlContext) => mlContext.Data.TextReader(
+            new TextLoader.Arguments()
             {
                 Separator = ",",
                 HasHeader = true,
@@ -40,77 +123,5 @@ namespace TaxiFare.TrainingModel
                 }
             }
         );
-
-            var model = Train(mlContext, _trainDataPath);
-            Evaluate(mlContext, model);
-            TestSinglePrediction(mlContext);
-            Console.ReadKey();
-        }
-
-        public static ITransformer Train(MLContext mlContext, string dataPath)
-        {
-            IDataView dataView = _textLoader.Read(dataPath);
-            var pipeline = mlContext.Transforms.CopyColumns("FareAmount", "Label")
-                .Append(mlContext.Transforms.Categorical.OneHotEncoding("VendorId"))
-                .Append(mlContext.Transforms.Categorical.OneHotEncoding("RateCode"))
-                .Append(mlContext.Transforms.Categorical.OneHotEncoding("PaymentType"))
-                .Append(mlContext.Transforms.Concatenate("Features", "VendorId", "RateCode", "PassengerCount", "TripTime", "TripDistance", "PaymentType"))
-                .Append(mlContext.Regression.Trainers.FastTree())
-            ;
-
-            Console.WriteLine("=============== Create and Train the Model ===============");
-            var model = pipeline.Fit(dataView);
-            Console.WriteLine("=============== End of training ===============");
-            SaveModelAsFile(mlContext, model);
-            return model;
-        }
-
-        private static void Evaluate(MLContext mlContext, ITransformer model)
-        {
-            IDataView dataView = _textLoader.Read(_testDataPath);
-            var predictions = model.Transform(dataView);
-            Console.WriteLine();
-            Console.WriteLine($"*************************************************");
-            Console.WriteLine($"*       Model quality metrics evaluation         ");
-            Console.WriteLine($"*------------------------------------------------");
-            using (var fileStream = new FileStream(_modelPath, FileMode.Create, FileAccess.Write, FileShare.Write))
-                mlContext.Model.Save(model, fileStream);
-            var metrics = mlContext.Regression.Evaluate(predictions, "Label", "Score");
-            Console.WriteLine($"*       R2 Score:      {metrics.RSquared:0.##}");
-            Console.WriteLine($"*       RMS loss:      {metrics.Rms:#.##}");
-        }
-
-        private static void TestSinglePrediction(MLContext mlContext)
-        {
-            ITransformer loadedModel;
-            // Loading Model.zip
-            using (var stream = new FileStream(_modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                loadedModel = mlContext.Model.Load(stream);
-            }
-            // Func<TaxiTrip, TaxiTripFarePrediction>
-            var predictionFunction = loadedModel.MakePredictionFunction<TaxiTrip, TaxiTripFarePrediction>(mlContext);
-            var taxiTripSample = new TaxiTrip()
-            {
-                VendorId = "VTS",
-                RateCode = "1",
-                PassengerCount = 1,
-                TripTime = 1140,
-                TripDistance = 3.75f,
-                PaymentType = "CRD",
-                FareAmount = 0 // To predict. Actual/Observed = 15.5
-            };
-            var prediction = predictionFunction.Predict(taxiTripSample);
-            Console.WriteLine($"**********************************************************************");
-            Console.WriteLine($"Predicted fare: {prediction.FareAmount:0.####}, actual fare: 15.5");
-            Console.WriteLine($"**********************************************************************");
-        }
-
-        private static void SaveModelAsFile(MLContext mlContext, ITransformer model)
-        {
-            using (var fileStream = new FileStream(_modelPath, FileMode.Create, FileAccess.Write, FileShare.Write))
-                mlContext.Model.Save(model, fileStream);
-            Console.WriteLine("The model is saved to {0}", _modelPath);
-        }
     }
 }
