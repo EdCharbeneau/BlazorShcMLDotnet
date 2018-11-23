@@ -8,8 +8,9 @@ using Microsoft.ML.Transforms;
 using Microsoft.ML.Transforms.Categorical;
 using Microsoft.ML.Transforms.Normalizers;
 using Microsoft.ML.Transforms.Text;
+using TaxiFare.Shared;
 
-namespace TaxiModel
+namespace TaxiFare.TrainingModel
 {
     class Program
     {

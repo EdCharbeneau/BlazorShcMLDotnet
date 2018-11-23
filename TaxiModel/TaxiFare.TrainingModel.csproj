@@ -10,6 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TaxiFare.Shared\TaxiFare.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Data\taxi-fare-test.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
