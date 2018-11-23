@@ -1,7 +1,33 @@
 ﻿@page "/"
+@using MlService
 
-<h1>Hello, world!</h1>
+@if (prediction == null)
+{
+    <p>loading...</p>
+}
+else
+{
+    <h1>@prediction.FareAmount</h1>
+    <!-- Expected 15.7855 -->
+}
 
-Welcome to your new app.
+@functions  {
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+TaxiTripFarePrediction prediction;
+
+protected override void OnInit()
+{
+    var taxiTripSample = new TaxiTrip()
+    {
+        VendorId = "VTS",
+        RateCode = "1",
+        PassengerCount = 1,
+        TripTime = 1140,
+        TripDistance = 3.75f,
+        PaymentType = "CRD",
+        FareAmount = 0 // To predict. Actual/Observed = 15.5
+    };
+    prediction = TaxiPrediction.GetTripFare(taxiTripSample);
+    StateHasChanged();
+}
+}

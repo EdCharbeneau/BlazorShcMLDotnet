@@ -15,4 +15,10 @@
     <ProjectReference Include="..\BlazorShcMLDotnet.App\BlazorShcMLDotnet.App.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\TrainedTaxiModel.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
