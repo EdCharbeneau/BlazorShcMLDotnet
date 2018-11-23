@@ -48,18 +48,13 @@ namespace TaxiFare.TrainingModel
         static IDataView TrainDataReader(MLContext mlContext) => CreateTextLoader(mlContext)
                 .Read(Path.Combine(Environment.CurrentDirectory, "Data", "taxi-fare-train.csv"));
 
-        public static ITransformer Train(MLContext mlContext)
-        {
-            var pipeline = mlContext.Transforms.CopyColumns("FareAmount", "Label")
+        public static ITransformer Train(MLContext mlContext) => mlContext.Transforms.CopyColumns("FareAmount", "Label")
                 .Append(mlContext.Transforms.Categorical.OneHotEncoding("VendorId"))
                 .Append(mlContext.Transforms.Categorical.OneHotEncoding("RateCode"))
                 .Append(mlContext.Transforms.Categorical.OneHotEncoding("PaymentType"))
                 .Append(mlContext.Transforms.Concatenate("Features", "VendorId", "RateCode", "PassengerCount", "TripTime", "TripDistance", "PaymentType"))
                 .Append(mlContext.Regression.Trainers.FastTree())
-            ;
-
-            return pipeline.Fit(TrainDataReader(mlContext));
-        }
+                .Fit(TrainDataReader(mlContext));
 
         static IDataView TestDataReader(MLContext mlContext) => CreateTextLoader(mlContext)
                      .Read(Path.Combine(Environment.CurrentDirectory, "Data", "taxi-fare-test.csv"));
