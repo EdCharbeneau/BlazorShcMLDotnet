@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MlService\MlService.csproj" />
+    <ProjectReference Include="..\MlService\TaxiFare.Service.csproj" />
   </ItemGroup>
 
 </Project>
