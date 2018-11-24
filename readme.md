@@ -8,7 +8,7 @@ From the Taxi.TrainingModel folder
 $ dotnet run
 ```
 
-From the BlazorShc.Server folder
+From the BlazorShcMLDotnet.Server folder
 
 ```
 $ dotnet run
