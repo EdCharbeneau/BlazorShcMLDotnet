@@ -4,6 +4,7 @@ using Microsoft.ML.Runtime.Data;
 using Microsoft.ML.Transforms.Categorical;
 using System;
 using System.IO;
+using TaxiFare.Service;
 using TaxiFare.Shared;
 
 namespace TaxiFare.TrainingModel
@@ -95,7 +96,8 @@ namespace TaxiFare.TrainingModel
 
         private static TaxiTripFarePrediction TestSinglePrediction()
         {
-            var service = new TaxiFare.Service.TaxiPrediction(_modelPath);
+            var loader = new FileLoader(_modelPath);
+            var service = new TaxiPrediction(loader);
             return service.GetTripFare(SampleData);
         }
 

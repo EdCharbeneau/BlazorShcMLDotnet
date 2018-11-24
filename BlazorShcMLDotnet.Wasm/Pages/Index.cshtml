@@ -1,0 +1,40 @@
+﻿@page "/"
+@using TaxiFare.Shared
+@using TaxiFare.Service
+@inject HttpClient Http;
+
+@if (prediction == null)
+{
+<p>loading...</p>
+}
+else
+{
+<h1>@prediction.FareAmount</h1>
+<!-- Expected 15.7855 -->
+}
+
+@functions  {
+
+    TaxiTripFarePrediction prediction;
+
+    protected async override void OnInit()
+    {
+        var modelStream = await Http.GetStreamAsync("Data/TrainedTaxiModel.zip");
+
+        var loader = new HttpLoader(modelStream, "");
+        var taxiService = new TaxiPrediction(loader);
+
+        var taxiTripSample = new TaxiTrip()
+        {
+            VendorId = "VTS",
+            RateCode = "1",
+            PassengerCount = 1,
+            TripTime = 1140,
+            TripDistance = 3.75f,
+            PaymentType = "CRD",
+            FareAmount = 0 // To predict. Actual/Observed = 15.5
+        };
+        prediction = taxiService.GetTripFare(taxiTripSample);
+        StateHasChanged();
+    }
+}

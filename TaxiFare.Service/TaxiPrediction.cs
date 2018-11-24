@@ -1,29 +1,32 @@
 ﻿using Microsoft.ML;
 using Microsoft.ML.Core.Data;
 using Microsoft.ML.Runtime.Data;
-using System.IO;
+using System.Threading.Tasks;
 using TaxiFare.Shared;
 
 namespace TaxiFare.Service
 {
     public class TaxiPrediction : ITaxiPrediction
     {
-        protected readonly ITransformer loadedModel;
-        protected readonly MLContext mlContext;
-        public TaxiPrediction(string modelPath)
+        private readonly ITransformer model;
+        private readonly MLContext context;
+        public TaxiPrediction(IModelLoader loader)
         {
-            mlContext = new MLContext(seed: 0);
+            context = new MLContext(seed: 0);
+            model = loader.Load(context);
 
-            using (var stream = new FileStream(modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                loadedModel = mlContext.Model.Load(stream);
         }
-
         public TaxiTripFarePrediction GetTripFare(TaxiTrip taxiTrip)
         {
-            var predictionFunction = loadedModel.MakePredictionFunction<TaxiTrip, TaxiTripFarePrediction>(mlContext);
+            var predictionFunction = model.MakePredictionFunction<TaxiTrip, TaxiTripFarePrediction>(context);
 
             return predictionFunction.Predict(taxiTrip);
         }
+
     }
 
+    public interface IModelLoader
+    {
+        ITransformer Load(MLContext context);
+    }
 }
