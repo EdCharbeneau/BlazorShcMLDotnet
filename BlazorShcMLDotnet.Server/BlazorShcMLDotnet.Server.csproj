@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorShcMLDotnet.App\BlazorShcMLDotnet.App.csproj" />
-    <ProjectReference Include="..\MlService\TaxiFare.Service.csproj" />
+    <ProjectReference Include="..\TaxiFare.Service\TaxiFare.Service.csproj" />
     <ProjectReference Include="..\TaxiFare.Shared\TaxiFare.Shared.csproj" />
   </ItemGroup>
 
