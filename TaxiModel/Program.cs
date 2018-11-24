@@ -12,6 +12,8 @@ namespace TaxiFare.TrainingModel
     {
 
         static readonly string _modelPath = Path.Combine(Environment.CurrentDirectory, "Data", "Model.zip");
+        static readonly string _outputPath = Path.GetFullPath("../../../../BlazorShcMLDotnet.Server/Data/TrainedTaxiModel.zip");
+
         static readonly TaxiTrip SampleData = new TaxiTrip()
         {
             VendorId = "VTS",
@@ -43,8 +45,23 @@ namespace TaxiFare.TrainingModel
             var prediction = TestSinglePrediction();
             DisplayPredictedFare(prediction);
 
+            // Export Model
+            ExportModel();
+
+            Console.WriteLine("Press any key...");
             Console.ReadKey();
         }
+
+        private static void ExportModel()
+        {
+            Console.WriteLine("Export Model? y/n");
+            if (Console.ReadKey(false).KeyChar == 'y')
+            {
+                File.Copy(_modelPath, _outputPath, true);
+                Console.WriteLine("Exported trained model to output");
+            }
+        }
+
         static IDataView TrainDataReader(MLContext mlContext) => CreateTextLoader(mlContext)
                 .Read(Path.Combine(Environment.CurrentDirectory, "Data", "taxi-fare-train.csv"));
 
