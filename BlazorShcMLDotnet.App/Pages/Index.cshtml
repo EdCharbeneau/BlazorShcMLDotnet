@@ -1,7 +1,7 @@
 ﻿@page "/"
 @using TaxiFare.Shared
 @using TaxiFare.Service
-@inject TaxiPrediction taxiService
+@inject ITaxiPrediction taxiService
 
 @if (prediction == null)
 {

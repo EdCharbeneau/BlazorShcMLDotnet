@@ -15,7 +15,7 @@ namespace BlazorShcMLDotnet.App
             // to read the forecast data.
             services.AddSingleton<WeatherForecastService>();
             var modelPath = Path.Combine(Environment.CurrentDirectory, "Data", "TrainedTaxiModel.zip");
-            services.AddSingleton(sp => new TaxiPrediction(modelPath));
+            services.AddSingleton<ITaxiPrediction>(sp => new TaxiPrediction(modelPath));
         }
 
         public void Configure(IBlazorApplicationBuilder app)

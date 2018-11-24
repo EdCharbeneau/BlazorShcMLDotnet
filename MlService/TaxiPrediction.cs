@@ -6,7 +6,7 @@ using TaxiFare.Shared;
 
 namespace TaxiFare.Service
 {
-    public class TaxiPrediction
+    public class TaxiPrediction : ITaxiPrediction
     {
         protected readonly ITransformer loadedModel;
         protected readonly MLContext mlContext;
