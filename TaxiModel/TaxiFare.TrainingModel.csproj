@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MlService\TaxiFare.Service.csproj" />
     <ProjectReference Include="..\TaxiFare.Shared\TaxiFare.Shared.csproj" />
   </ItemGroup>
 

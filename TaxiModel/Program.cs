@@ -40,7 +40,7 @@ namespace TaxiFare.TrainingModel
             DisplayMetrics(metrics);
 
             // Test
-            var prediction = TestSinglePrediction(mlContext, SampleData);
+            var prediction = TestSinglePrediction();
             DisplayPredictedFare(prediction);
 
             Console.ReadKey();
@@ -76,16 +76,10 @@ namespace TaxiFare.TrainingModel
             Console.WriteLine(new String('=', 35));
         }
 
-        private static TaxiTripFarePrediction TestSinglePrediction(MLContext mlContext, TaxiTrip sample)
+        private static TaxiTripFarePrediction TestSinglePrediction()
         {
-            ITransformer loadedModel;
-
-            using (var stream = new FileStream(_modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                loadedModel = mlContext.Model.Load(stream);
-
-            var predictionFunction = loadedModel.MakePredictionFunction<TaxiTrip, TaxiTripFarePrediction>(mlContext);
-
-            return predictionFunction.Predict(sample);
+            var service = new TaxiFare.Service.TaxiPrediction(_modelPath);
+            return service.GetTripFare(SampleData);
         }
 
         private static void DisplayPredictedFare(TaxiTripFarePrediction prediction)

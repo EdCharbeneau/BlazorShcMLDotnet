@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using TaxiFare.Shared
 @using TaxiFare.Service
+@inject TaxiPrediction taxiService
 
 @if (prediction == null)
 {
@@ -28,7 +29,7 @@ protected override void OnInit()
         PaymentType = "CRD",
         FareAmount = 0 // To predict. Actual/Observed = 15.5
     };
-    prediction = TaxiPrediction.GetTripFare(taxiTripSample);
+    prediction = taxiService.GetTripFare(taxiTripSample);
     StateHasChanged();
 }
 }
