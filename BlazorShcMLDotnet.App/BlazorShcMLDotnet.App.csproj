@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MlService\TaxiFare.Service.csproj" />
+    <ProjectReference Include="..\TaxiFare.Service\TaxiFare.Service.csproj" />
   </ItemGroup>
 
 </Project>

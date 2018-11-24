@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorShcMLDotnet.Server", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorShcMLDotnet.App", "BlazorShcMLDotnet.App\BlazorShcMLDotnet.App.csproj", "{DD2CBF95-3CE0-45C8-A0B5-0388353DB89C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaxiFare.Service", "MlService\TaxiFare.Service.csproj", "{FC5AD6BA-6EF4-4072-AFF4-E19BA00FA546}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaxiFare.Service", "TaxiFare.Service\TaxiFare.Service.csproj", "{FC5AD6BA-6EF4-4072-AFF4-E19BA00FA546}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaxiFare.TrainingModel", "TaxiModel\TaxiFare.TrainingModel.csproj", "{661A208F-CE5A-4AF8-A6A4-9748E42D1E2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaxiFare.TrainingModel", "TaxiFare.TrainingModel\TaxiFare.TrainingModel.csproj", "{661A208F-CE5A-4AF8-A6A4-9748E42D1E2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaxiFare.Shared", "TaxiFare.Shared\TaxiFare.Shared.csproj", "{4AF591DB-92DF-44AE-BC10-87A9B5164C4F}"
 EndProject
